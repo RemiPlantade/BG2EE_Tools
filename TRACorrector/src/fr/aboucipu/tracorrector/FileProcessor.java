@@ -56,15 +56,29 @@ public class FileProcessor {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		for (Integer integer : duplReplicas) {
-			System.out.println();
-		}
 		System.out.println("End read origin file");
 		System.out.println("Number of replica : " + origin_replicas.size());
 	}
 
 	public void process(String string) throws IOException {
-		lines = loadFile(string);			
+		lines = loadFile(string);	
+		try (Stream<String> lines = Files.lines(Paths.get("dialogEn.tra"))) {			
+			AtomicReference<String> previousId  = new AtomicReference<String>("");
+		    lines.forEach(line ->{
+				String id =  getIdOfReplica(line);
+				if(id != null) {
+					origin_replicas.put(id,line);
+					previousId.set(id);
+				}else {
+					String text= origin_replicas.get(previousId.get());
+					text += "\n" + line; 
+					origin_replicas.put(previousId.get(),text);
+				}
+		    });
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private Stream<String> loadFile(String filePath) throws IOException {
